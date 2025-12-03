@@ -115,6 +115,10 @@ nav {
 	display: none;
 }
 
+.material-symbols-outlined.lock_person {
+	font-size: 1.9rem;
+}
+
 .custom-alert {
 	display: flex;
 	flex-direction: column; 
