@@ -111,9 +111,32 @@
     <button id="backbutton"><a href="index.html">กลับหน้า Login</a></button>
 	</div>
 
-    <script>
-        document.getElementById('menu-icon').onclick = function() {
-			    document.getElementById('nav-link').classList.toggle('active');
+    <script type="module">
+      import { getRoomStatus } from "./CodeJS/room-manager.js";
+
+      async function checkRoom(buildingId, roomName, autoScheduleStatus) {
+        const roomId = buildingId + "_" + roomName;
+      
+        const manual = await getRoomStatus(roomId);
+      
+        // ถ้ามีโหมด manual → ใช้ข้อมูลที่หัวหน้าห้องตั้งไว้
+        if (manual && manual.mode === "manual") {
+          return {
+            status: manual.status,
+            source: "manual",
+            untilTime: manual.untilTime || null
+          };
+        }
+      
+        // ถ้าไม่มี manual → ให้ใช้ Auto แบบเดิมที่น้องเขียนไว้
+        return {
+          status: autoScheduleStatus,
+          source: "auto"
+        };
+      }
+
+      document.getElementById('menu-icon').onclick = function() {
+			  document.getElementById('nav-link').classList.toggle('active');
 		  }
 
         /*ส่วนฟังชันเข้าสู่ระบบ*/

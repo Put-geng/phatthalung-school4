@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>โรงเรียนพัทลุง</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined">
+    <link rel="stylesheet" href="CodeCSS/update-room.css">
+</head>
+<body>
+
+    <h2 id="roomName"></h2>
+
+    <label>สถานะห้อง:</label>
+    <select id="status">
+      <option value="busy">ไม่ว่าง</option>
+      <option value="free">ว่าง</option>
+      <option value="teacher-late">ครูมาสาย</option>
+      <option value="student-using">มีนักเรียนใช้</option>
+    </select>
+
+    <label>หมดเวลาที่:</label>
+    <input type="datetime-local" id="until">
+
+    <button id="saveBtn">บันทึก</button>
+    <button id="resetBtn" style="background:#555; color:white; margin-top:10px;">
+        กลับสู่โหมดอัตโนมัติ
+    </button>
+
+
+</body>
+
+<script type="module">
+    import { setRoomManual, resetRoomToAuto } from "./CodeJS/room-manager.js";
+
+    const resetBtn = document.getElementById("resetBtn");
+    const saveBtn = document.getElementById("saveBtn");
+    const status = document.getElementById("status");
+    const until = document.getElementById("until");
+
+    const params = new URLSearchParams(location.search);
+    const roomId = params.get("room");
+
+    resetBtn.onclick = async () => {
+      if (!confirm("ต้องการกลับไปใช้โหมดอัตโนมัติหรือไม่?")) return;
+
+      await resetRoomToAuto(roomId);
+      alert("ระบบเปลี่ยนกลับเป็นโหมดอัตโนมัติแล้ว");
+      location.href = "select-room.html";
+    };
+    
+    document.getElementById("roomName").innerText = "แก้ไขห้อง " + roomId;
+    
+    saveBtn.onclick = async () => {
+      await setRoomManual(
+        roomId,
+        status.value,
+        until.value
+      );
+      alert("บันทึกแล้ว!");
+      location.href = "select-room.html";
+    };
+</script>
+
+</html>

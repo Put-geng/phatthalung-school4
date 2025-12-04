@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="favicon-logo.png" type="image/png">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined">
+    <link rel="stylesheet" href="CodeCSS/select-room.css">
+    <title>โรงเรียนพัทลุง</title>
+</head>
+<body>
+    <h2>เลือกห้องที่จะอัปเดต</h2>
+
+    <button onclick="go('building-1_101')">101</button>
+    <button onclick="go('building-1_102')">102</button>
+    <button onclick="go('building-2_201')">201</button>
+
+</body>
+
+<script>
+    function go(id){
+      location.href = "update-room.html?room=" + id;
+    }
+</script>
+
+</html>
