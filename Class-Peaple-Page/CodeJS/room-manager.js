@@ -5,36 +5,56 @@ import {
 
 
 // ✔ อ่านสถานะห้อง + เช็กหมดเวลา manual
+// อ่านสถานะห้องแบบไม่ให้ UI พัง
 export async function getRoomStatus(roomId) {
-  const ref = doc(db, "rooms", roomId);
-  const snap = await getDoc(ref);
+  try {
+    const ref = doc(db, "rooms", roomId);
+    const snap = await getDoc(ref);
 
-  if (!snap.exists()) return { mode: "auto" };
+    // ไม่มีเอกสาร → auto
+    if (!snap.exists()) {
+      return { mode: "auto" };
+    }
 
-  const data = snap.data();
+    const data = snap.data();
 
-  if (data.mode !== "manual") return { mode: "auto" };
+    // ถ้า mode ไม่ใช่ manual → auto
+    if (data.mode !== "manual") {
+      return { mode: "auto" };
+    }
 
-  // เวลา manual หมดหรือยัง?
-  const now = new Date();
+    // เช็กเวลา manual ว่าหมดหรือยัง
+    const now = new Date();
+    const [hh, mm] = data.untilTime.split(":").map(Number);
+    const expire = new Date();
+    expire.setHours(hh, mm, 0, 0);
 
-  const [hh, mm] = data.untilTime.split(":").map(Number);
-  const expire = new Date();
-  expire.setHours(hh, mm, 0, 0);
+    if (now > expire) {
+      // หมดเวลา → reset
+      await updateDoc(ref, {
+        mode: "auto",
+        status: deleteField(),
+        untilTime: deleteField(),
+      });
 
-  if (now > expire) {
-    // reset → auto
-    await updateDoc(ref, {
-      mode: "auto",
-      status: deleteField(),
-      untilTime: deleteField()
-    });
+      return { mode: "auto" };
+    }
 
+    // ยังอยู่ในโหมด manual
+    return {
+      mode: "manual",
+      status: data.status,
+      untilTime: data.untilTime
+    };
+
+  } catch (err) {
+    console.error("getRoomStatus ERROR:", err);
+    
+    // ถ้า error → ไม่ควรทำให้ UI พัง → คืน auto
     return { mode: "auto" };
   }
-
-  return data;
 }
+
 
 
 // ✔ หัวหน้าห้องอัปเดตสถานะ

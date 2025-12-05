@@ -15,12 +15,26 @@
     <button onclick="go('building-1_102')">102</button>
     <button onclick="go('building-2_201')">201</button>
 
-</body>
+    <select id="roomSelect"></select>
 
 <script>
+    // ดึงชื่อห้องทั้งหมดออกมาจาก buildings
+    const allRooms = Object.keys(buildings["building-1"]);
+    
+    const select = document.getElementById("roomSelect");
+    
+    allRooms.forEach(roomName => {
+      const option = document.createElement("option");
+      option.value = roomName;
+      option.textContent = roomName;
+      select.appendChild(option);
+    });
+
     function go(id){
       location.href = "update-room.html?room=" + id;
     }
 </script>
+
+</body>
 
 </html>
