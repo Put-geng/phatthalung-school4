@@ -1,0 +1,270 @@
+/* นำเข้า Font 'Sriracha' เพื่อให้เข้ากับ check-class.css */
+@import url('https://fonts.googleapis.com/css2?family=Sriracha&display=swap');
+
+:root {
+    --primary-color: #2c3e50; /* สีเข้มหลัก */
+    --secondary-color: #3498db; /* สีฟ้าสำหรับการเน้น */
+    --success-color: #27ae60; /* สีเขียวสำหรับปุ่มตั้งค่า */
+    --danger-color: #c0392b; /* สีแดงสำหรับการยกเลิก */
+    --background-color: #ecf0f1;
+    --card-background: #ffffff;
+    --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+* {
+    font-family: 'Sriracha', sans-serif;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: var(--background-color);
+    color: var(--primary-color);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* --- Header & Logout --- */
+header {
+    width: 100%;
+    max-width: 800px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 0;
+    margin-bottom: 30px;
+    border-bottom: 2px solid #bdc3c7;
+}
+
+header h2 {
+    font-size: 1.8rem;
+    font-weight: 700;
+}
+
+#userInfo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+#currentUserEmail {
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--secondary-color);
+}
+
+#logoutBtn {
+    background-color: var(--danger-color);
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1.2rem;
+    transition: background-color 0.3s;
+}
+
+#logoutBtn:hover {
+    background-color: #e74c3c;
+}
+
+/* --- Main Content Layout --- */
+main {
+    width: 100%;
+    max-width: 800px;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+/* --- Setup Form Container (ส่วนฟอร์มตั้งค่า) --- */
+#setupFormContainer, #currentStatusDisplay {
+    background-color: var(--card-background);
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+    border-left: 5px solid var(--secondary-color);
+}
+
+#setupFormContainer h3, #currentStatusDisplay h3 {
+    margin-bottom: 20px;
+    font-size: 1.5rem;
+    color: var(--primary-color);
+    border-bottom: 1px solid #ecf0f1;
+    padding-bottom: 10px;
+}
+
+label {
+    display: block;
+    margin-top: 15px;
+    margin-bottom: 5px;
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+select, input[type="time"] {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 1rem;
+    transition: border-color 0.3s;
+}
+
+select:focus, input[type="time"]:focus {
+    border-color: var(--secondary-color);
+    outline: none;
+}
+
+/* --- Radio Button Group (Status) --- */
+.setting-group {
+    margin-top: 20px;
+    border: 1px dashed #ccc;
+    padding: 15px;
+    border-radius: 8px;
+}
+
+.setting-group label {
+    display: inline-block;
+    margin-right: 20px;
+    font-weight: 400;
+    cursor: pointer;
+}
+
+.setting-group input[type="radio"] {
+    margin-right: 5px;
+}
+
+/* --- Action Buttons --- */
+#setManualBtn {
+    width: 100%;
+    padding: 12px;
+    margin-top: 25px;
+    background-color: var(--success-color);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+#setManualBtn:hover {
+    background-color: #2ecc71;
+}
+
+#clearManualBtn {
+    width: 100%;
+    padding: 10px;
+    margin-top: 15px;
+    background-color: var(--danger-color);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 1rem;
+    font-weight: 400;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+#clearManualBtn:hover {
+    background-color: #e74c3c;
+}
+
+/* --- Current Status Display (ส่วนแสดงสถานะ) --- */
+#currentStatusDisplay {
+    border-left: 5px solid var(--success-color);
+}
+
+#currentStatusDisplay p {
+    font-size: 1.1rem;
+    line-height: 1.8;
+}
+
+#currentStatusDisplay strong {
+    font-weight: 700;
+}
+
+#displayMode {
+    padding: 2px 8px;
+    border-radius: 4px;
+    color: black;
+}
+
+/* สีสำหรับโหมด */
+#currentStatusDisplay #displayMode:contains("Manual") {
+    background-color: #f39c12; /* ส้ม */
+}
+
+#currentStatusDisplay #displayMode:contains("Auto") {
+    background-color: #95a5a6; /* เทา */
+}
+
+/* --- Alert Box (CSS นำมาจาก check-class.css) --- */
+/* หากคุณได้รวม CSS Alert Box ในไฟล์ check-class.css แล้ว อาจไม่ต้องใช้ส่วนนี้อีก */
+.custom-alert {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 300px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    padding: 25px;
+    text-align: center;
+    z-index: 1000;
+    display: none;
+}
+
+.custom-alert.show {
+    display: block;
+}
+
+.alert-icon {
+    width: 50px;
+    height: 50px;
+    margin-bottom: 15px;
+}
+
+.alertMessage {
+    display: block;
+    margin-bottom: 20px;
+    font-size: 1rem;
+    white-space: pre-wrap;
+}
+
+#alertOkBtn {
+    padding: 8px 20px;
+    background: var(--success-color);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+/* --- Responsive Design --- */
+@media (max-width: 600px) {
+    header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    header h2 {
+        font-size: 1.5rem;
+    }
+
+    main {
+        padding: 0;
+    }
+
+    #setupFormContainer, #currentStatusDisplay {
+        padding: 20px;
+    }
+}

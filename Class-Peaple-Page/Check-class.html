@@ -117,7 +117,7 @@
     <script type="module">
       import { buildings } from "./CodeJS/building-data.js";
       import { manualRooms } from "./CodeJS/building-data.js";
-      import { getRoomStatus } from "./CodeJS/room-manager.js";
+      import { getAllManualStatuses } from "./CodeJS/room-manager.js";
 
       async function checkRoom(buildingId, roomName, autoScheduleStatus) {
         const roomId = buildingId + "_" + roomName;
@@ -214,7 +214,164 @@
       }
       
       // ✅ ฟังก์ชันหลัก
-      /*
+
+      let manualStatuses = {};
+
+      async function updateAllBuildings() {
+        const now = new Date();
+
+        const days = ["อาทิตย์", "จันทร์", "อังคาร", "พุธ", "พฤหัสบดี", "ศุกร์", "เสาร์"];
+        const today = days[now.getDay()];
+        const nowSec = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
+
+        for (const [buildingId, rooms] of Object.entries(buildings)) {
+          const container = document.getElementById(buildingId);
+          const fragment = document.createDocumentFragment(); // *** เพิ่ม Fragment ***
+
+          for (const [roomName, times] of Object.entries(rooms)) {
+            const roomId = roomName.replace(/\s/g, '');
+            const manual = manualStatuses[roomId];
+
+            let status = "ว่าง";
+            let className = "free";
+            let countdownText = "";
+            let currentClass = "";
+            let currentSubject = "";
+            let nextClass = "";
+            let nextSubject = "";
+            let countdownSeconds = 0;
+
+            if (manual && manual.mode === "manual") {
+              status = manual.status;
+              className = status === "ว่าง" ? "free manual" : "busy manual";
+
+              const [hh, mm] = manual.untilTime.split(":").map(Number);
+              const expireSec = hh * 3600 + mm * 60;
+
+              if (expireSec > nowSec) {
+                countdownSeconds = expireSec - nowSec;
+                countdownText = `จะกลับเป็น Auto ใน ${formatCountdown(countdownSeconds)}`;
+              } else {
+                // Manual หมดเวลาแล้ว
+                status = "ว่าง";
+                className = "free manual expired";
+                countdownText = "Manual หมดเวลาแล้ว (รอกลับเป็น Auto)";
+              }
+            } else {
+              let soonestStartSec = null;
+              let isBusy = false;
+
+              for (const t of times) {
+                if (t.day !== today && t.day !== "ทุกวัน") continue;
+
+                const [sh, sm] = t.start.split(":").map(Number);
+                const [eh, em] = t.end.split(":").map(Number);
+                const startSec = sh * 3600 + sm * 60;
+                const endSec = eh * 3600 + em * 60;
+
+                if (nowSec >= startSec && nowSec < endSec) {
+                  isBusy = true;
+                  status = "ไม่ว่าง";
+                  className = "busy auto";
+                  countdownSeconds = endSec - nowSec;
+                  countdownText = `จะว่างอีกใน ${formatCountdown(countdownSeconds)}`;
+                  currentClass = t.class;
+                  currentSubject = t.subject;
+                  break;
+                } else if (nowSec < startSec) {
+                  if (!soonestStartSec || startSec < soonestStartSec) {
+                    soonestStartSec = startSec;
+                    nextClass = t.class;
+                    nextSubject = t.subject;
+                  }
+                }
+              }
+
+              if (!isBusy && soonestStartSec) {
+                status = "ว่าง";
+                className = "free auto";
+                countdownSeconds = soonestStartSec - nowSec;
+                countdownText = `จะไม่ว่างในอีก ${formatCountdown(countdownSeconds)}`;
+              } else if (!isBusy && !soonestStartSec) {
+                status = "ว่าง";
+                className = "free auto full-day";
+                countdownText = "ว่างตลอดวันนี้";
+              }
+            }
+
+            const div = document.createElement("div");
+            div.className = `room ${className}`;
+            div.setAttribute('data-countdown-sec', countdownSeconds);
+            div.setAttribute('data-room-id', roomId);
+
+            div.innerHTML = `
+              <h3>${roomName} <span class="badge ${manual && manual.mode === 'manual' ? 'manual' : 'auto'}">${manual && manual.mode === 'manual' ? 'Manual' : 'Auto'}</span></h3>
+              <p class="status-text">${status}</p>
+              ${currentClass ? `<p class="detail">ชั้น: ${currentClass}</p><p class="detail">วิชา: ${currentSubject}</p>` : ""}
+              ${!currentClass && nextClass ? `<p class="detail">ถัดไป: ${nextClass}</p><p class="detail">วิชา: ${nextSubject}</p>` : ""}
+              <p class="countdown-timer">${countdownText}</p>
+            `;
+
+            fragment.appendChild(div);
+          }
+          container.innerHTML = "";
+          container.appendChild(fragment);
+        }
+      }
+
+      let lastFetchTime = 0;
+      const FETCH_INTERVAL = 30000;
+
+      async function fetchAndUpdateManualStatus() {
+        const now = new Date();
+
+        if (now.getTime() - lastFetchTime > FETCH_INTERVAL || lastFetchTime === 0) {
+          console.log('Fetching new manual statuses from Firebase...');
+          manualStatuses = await getAllManualStatuses(); // 🚨 หยุดรอตรงนี้
+          lastFetchTime = now.getTime();
+
+          // เมื่อดึงข้อมูล Manual เสร็จแล้ว ค่อยเรียกแสดงผลอีกครั้ง
+          updateAllBuildings();
+        }
+      }
+
+      function startTimerCountdown() {
+        addtimecurrent();
+
+        document.querySelectorAll('.room').forEach(roomDiv => {
+          let seconds = parseInt(roomDiv.getAttribute('data-countdown-sec'), 10);
+
+          if (seconds > 0) {
+            seconds -= 1;
+            roomDiv.setAttribute('data-countdown-sec', seconds);
+
+            const timerP = roomDiv.querySelector('.countdown-timer');
+            if (timerP) {
+              const isManual = roomDiv.classList.contains('manual');
+              const isBusy = roomDiv.classList.contains('busy');
+
+              let prefix = isManual ? 'จะกลับเป็น Auto ใน' : (isBusy ? 'จะว่างอีกใน' : 'จะไม่ว่างในอีก');
+
+              timerP.textContent = `${prefix} ${formatCountdown(seconds)}`;
+            }
+          } else if (seconds === 0) {
+            roomDiv.setAttribute('data-countdown-sec', -1);
+          }
+        });
+      }
+
+      window.addEventListener('DOMContentLoaded', () => {
+        updateAllBuildings();
+
+        fetchAndUpdateManualStatus(); // มันจะดึงและอัปเดตหน้าใหม่อีกครั้งเมื่อดึงข้อมูลเสร็จ
+
+        setInterval(startTimerCountdown, 1000); // อัปเดตตัวเลข Timer ทุก 1 วินาที
+        setInterval(updateAllBuildings, 30000); // คำนวณสถานะใหม่ทุก 30 วินาที
+      });
+
+
+      
+    /*
       function updateAllBuildings() {
         const days = ["อาทิตย์", "จันทร์", "อังคาร", "พุธ", "พฤหัสบดี", "ศุกร์", "เสาร์"];
         const today = days[new Date().getDay()];
@@ -275,251 +432,6 @@
           }
         }
       } */
-
-/*
-      let isUpdating = false;
-
-      async function updateAllBuildings() {
-        if (isUpdating) return;
-        isUpdating = true;
-      
-        const days = ["อาทิตย์", "จันทร์", "อังคาร", "พุธ", "พฤหัสบดี", "ศุกร์", "เสาร์"];
-        const today = days[new Date().getDay()];
-        const now = getSecondsSinceMidnight();
-      
-        // 1) เตรียม Promise ทั้งหมดก่อน (โหลดพร้อมกัน)
-        const roomPromises = [];
-      
-        for (const [buildingId, rooms] of Object.entries(buildings)) {
-          for (const [roomName] of Object.entries(rooms)) {
-            const roomId = buildingId + "_" + roomName;
-            roomPromises.push(getRoomStatus(roomId));
-          }
-        }
-      
-        // 2) รอดึงสถานะทุกห้องพร้อมกัน
-        const allRoomStatuses = await Promise.all(roomPromises);
-      
-        // index สำหรับหยิบ manual จาก array
-        let statusIndex = 0;
-      
-        // 3) Render ห้องทั้งหมด
-        for (const [buildingId, rooms] of Object.entries(buildings)) {
-        
-          const container = document.getElementById(buildingId);
-          container.innerHTML = "";
-        
-          for (const [roomName, times] of Object.entries(rooms)) {
-          
-            // manual ถูกโหลดไว้แล้ว ไม่ต้อง await ซ้ำอีก!!!
-            const manual = allRoomStatuses[statusIndex++];
-
-            let status = "ว่าง";
-            let className = "free";
-            let countdown = "";
-            let currentClass = "";
-            let currentSubject = "";
-            let nextClass = "";
-            let nextSubject = "";
-            let soonestStart = null;
-          
-          
-            // ---------- MANUAL ----------
-            if (manual && manual.mode === "manual") {
-            
-              const nowDate = new Date();
-              const until = new Date(manual.untilTime);
-            
-              if (nowDate < until) {
-                status = manual.status === "busy" ? "ไม่ว่าง" : "ว่าง";
-                className = manual.status === "busy" ? "busy" : "free";
-              
-                const remaining = Math.floor((until - nowDate) / 1000);
-                countdown = `(โหมดหัวหน้าห้อง) จะสิ้นสุดใน ${formatCountdown(remaining)}`;
-              }
-            
-            } else {
-              // ---------- AUTO ORIGINAL ----------
-              for (const t of times) {
-                if (t.day !== today && t.day !== "ทุกวัน") continue;
-              
-                const [sh, sm] = t.start.split(":").map(Number);
-                const [eh, em] = t.end.split(":").map(Number);
-                const startSec = sh * 3600 + sm * 60;
-                const endSec = eh * 3600 + em * 60;
-              
-                if (now >= startSec && now < endSec) {
-                  status = "ไม่ว่าง";
-                  className = "busy";
-                  countdown = `จะว่างอีกใน ${formatCountdown(endSec - now)}`;
-                  currentClass = t.class;
-                  currentSubject = t.subject;
-                  break;
-                } else if (now < startSec) {
-                  if (!soonestStart || startSec < soonestStart.startSec) {
-                    soonestStart = { ...t, startSec };
-                  }
-                }
-              }
-            
-              if (status === "ว่าง" && soonestStart) {
-                countdown = `จะไม่ว่างในอีก ${formatCountdown(soonestStart.startSec - now)}`;
-                nextClass = soonestStart.class;
-                nextSubject = soonestStart.subject;
-              }
-            }
-          
-          
-            // ---------- Create DOM ----------
-            const div = document.createElement("div");
-            div.className = `room ${className}`;
-            div.innerHTML = `
-              <h3>${roomName}</h3>
-              <p>${status}</p>
-              ${currentClass ? `<p>ชั้นเรียน: ${currentClass}</p><p>วิชา: ${currentSubject}</p>` : ""}
-              ${!currentClass && nextClass ? `<p>ชั้นเรียนถัดไป: ${nextClass}</p><p>วิชา: ${nextSubject}</p>` : ""}
-              <p>${countdown}</p>
-            `;
-            container.appendChild(div);
-          
-          }
-        }
-      
-        isUpdating = false;
-      }
-
-
-      async function loopUpdate() {
-        await updateAllBuildings();
-        setTimeout(loopUpdate, 1000);
-      }
-
-      loopUpdate();
-      */
-
-      
-      let isUpdating = false;
-
-      // โหลด manual ของทุกห้องครั้งเดียว
-      async function loadAllManualRooms() {
-          const roomPromises = [];
-          for (const [buildingId, rooms] of Object.entries(buildings)) {
-              for (const [roomName] of Object.entries(rooms)) {
-                  const roomId = buildingId + "_" + roomName;
-                  roomPromises.push(getRoomStatus(roomId));
-              }
-          }
-          const allRoomStatuses = await Promise.all(roomPromises);
-        
-          // สร้าง object เก็บ manual ข้อมูลแบบ key-value
-          let statusIndex = 0;
-          const manualMap = {};
-          for (const [buildingId, rooms] of Object.entries(buildings)) {
-              for (const [roomName] of Object.entries(rooms)) {
-                  const roomId = buildingId + "_" + roomName;
-                  manualMap[roomId] = allRoomStatuses[statusIndex++];
-              }
-          }
-          return manualMap;
-      }
-
-      async function updateAllBuildings() {
-          if (isUpdating) return;
-          isUpdating = true;
-      
-          const manualMap = await loadAllManualRooms(); // โหลด manual ครั้งเดียว
-          const days = ["อาทิตย์", "จันทร์", "อังคาร", "พุธ", "พฤหัสบดี", "ศุกร์", "เสาร์"];
-          const today = days[new Date().getDay()];
-          const now = getSecondsSinceMidnight();
-      
-          for (const [buildingId, rooms] of Object.entries(buildings)) {
-              const container = document.getElementById(buildingId);
-              container.innerHTML = "";
-          
-              for (const [roomName, times] of Object.entries(rooms)) {
-                  const roomId = buildingId + "_" + roomName;
-                  const manual = manualMap[roomId];
-              
-                  let status = "ว่าง";
-                  let className = "free";
-                  let countdown = "";
-                  let currentClass = "";
-                  let currentSubject = "";
-                  let nextClass = "";
-                  let nextSubject = "";
-                  let soonestStart = null;
-              
-                  // ---------- MANUAL ----------
-                  if (manual && manual.mode === "manual") {
-                      const nowDate = new Date();
-                      const until = new Date(manual.untilTime);
-                  
-                      if (nowDate < until) {
-                          status = manual.status === "busy" ? "ไม่ว่าง" : "ว่าง";
-                          className = manual.status === "busy" ? "busy" : "free";
-                      
-                          const remaining = Math.floor((until - nowDate) / 1000);
-                          countdown = `(โหมดหัวหน้าห้อง) จะสิ้นสุดใน ${formatCountdown(remaining)}`;
-                      }
-                  } else {
-                      // ---------- AUTO ORIGINAL ----------
-                      for (const t of times) {
-                          if (t.day !== today && t.day !== "ทุกวัน") continue;
-                      
-                          const [sh, sm] = t.start.split(":").map(Number);
-                          const [eh, em] = t.end.split(":").map(Number);
-                          const startSec = sh * 3600 + sm * 60;
-                          const endSec = eh * 3600 + em * 60;
-                      
-                          if (now >= startSec && now < endSec) {
-                              status = "ไม่ว่าง";
-                              className = "busy";
-                              countdown = `จะว่างอีกใน ${formatCountdown(endSec - now)}`;
-                              currentClass = t.class;
-                              currentSubject = t.subject;
-                              break;
-                          } else if (now < startSec) {
-                              if (!soonestStart || startSec < soonestStart.startSec) {
-                                  soonestStart = { ...t, startSec };
-                              }
-                          }
-                      }
-                    
-                      if (status === "ว่าง" && soonestStart) {
-                          countdown = `จะไม่ว่างในอีก ${formatCountdown(soonestStart.startSec - now)}`;
-                          nextClass = soonestStart.class;
-                          nextSubject = soonestStart.subject;
-                      }
-                  }
-                
-                  // ---------- Create DOM ----------
-                  const div = document.createElement("div");
-                  div.className = `room ${className}`;
-                  div.innerHTML = `
-                    <h3>${roomName}</h3>
-                    <p>${status}</p>
-                    ${currentClass ? `<p>ชั้นเรียน: ${currentClass}</p><p>วิชา: ${currentSubject}</p>` : ""}
-                    ${!currentClass && nextClass ? `<p>ชั้นเรียนถัดไป: ${nextClass}</p><p>วิชา: ${nextSubject}</p>` : ""}
-                    <p>${countdown}</p>
-                  `;
-                  container.appendChild(div);
-              }
-          }
-        
-          isUpdating = false;
-      }
-
-      // Loop update
-      async function loopUpdate() {
-          await updateAllBuildings();
-          setTimeout(loopUpdate, 1000);
-      }
-
-      loopUpdate();
-      
-
-
-
       
       //updateAllBuildings();
       //setInterval(updateAllBuildings, 1000);

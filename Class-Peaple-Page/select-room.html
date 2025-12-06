@@ -3,6 +3,89 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ตั้งค่าห้องเรียน (หัวหน้าห้อง)</title>
+    <link rel="icon" href="favicon-logo.png" type="image/png">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
+    <link rel="stylesheet" href="CodeCSS/leader-settings.css">
+</head>
+<body>
+    <header>
+        <h2>⚙️ ตั้งค่าสถานะห้องเรียน (Manual)</h2>
+        <div id="userInfo">
+            <span id="currentUserEmail"></span>
+            <button id="logoutBtn" class="material-symbols-outlined">logout</button>
+        </div>
+    </header>
+
+    <main>
+        <div id="setupFormContainer">
+            <h3>1. เลือกห้องและสถานะ</h3>
+            
+            <label for="buildingSelect">เลือกอาคาร:</label>
+            <select id="buildingSelect">
+                </select>
+            
+            <label for="roomSelect">เลือกห้อง:</label>
+            <select id="roomSelect" disabled>
+                <option value="">-- กรุณาเลือกห้อง --</option>
+            </select>
+            
+            <div class="setting-group">
+                <label>สถานะ:</label>
+                <input type="radio" id="statusFree" name="roomStatus" value="ว่าง" checked>
+                <label for="statusFree">ว่าง</label>
+                <input type="radio" id="statusBusy" name="roomStatus" value="ไม่ว่าง">
+                <label for="statusBusy">ไม่ว่าง</label>
+            </div>
+
+            <label for="periodSelect">สิ้นสุดสถานะ Manual เมื่อจบคาบ:</label>
+            <select id="periodSelect" required>
+              <option value="" disabled selected>-- เลือกคาบสิ้นสุด --</option>
+              <option value="08:30">คาบ 0 (07:40 - 08:30)</option>
+              <option value="09:20">คาบ 1 (08:30 - 09:20)</option>
+              <option value="10:10">คาบ 2 (09:20 - 10:10)</option>
+              <option value="11:00">คาบ 3 (10:10 - 11:00)</option>
+              <option value="11:50">คาบ 4 (11:00 - 11:50)</option>
+              <option value="12:40">คาบ 5 (11:50 - 12:40)</option>
+              <option value="13:30">คาบ 6 (12:40 - 13:30)</option>
+              <option value="14:20">คาบ 7 (13:30 - 14:20)</option>
+              <option value="15:10">คาบ 8 (14:20 - 15:10)</option>
+              <option value="16:00">คาบ 9 (15:10 - 16:00)</option>
+              <option value="23:59">จบวัน (23:59)</option>
+            </select>
+
+            <p id="timeWarning" style="color: red; margin-top: 10px;"></p>
+
+            <button id="setManualBtn">✅ ตั้งค่า Manual</button>
+
+            <button id="clearManualBtn" class="secondary-btn">❌ ยกเลิก Manual (กลับไป Auto)</button>
+        </div>
+
+        <div id="currentStatusDisplay">
+            <h3>2. สถานะปัจจุบันของห้องที่เลือก</h3>
+            <p>ห้อง: <strong id="displayRoomName">--</strong></p>
+            <p>สถานะ: <strong id="displayStatus">--</strong></p>
+            <p>โหมด: <strong id="displayMode">Auto</strong></p>
+            <p>สิ้นสุด: <strong id="displayUntil">--</strong></p>
+        </div>
+    </main>
+
+    <div id="alertBox" class="custom-alert">
+        <img id="alertIcon" src="" alt="alertIcon" class="alert-icon">
+        <span id="alertMessage" class="alertMessage"></span>
+        <button id="alertOkBtn">OK</button>
+    </div>
+
+
+    <script type="module" src="CodeJS/select-room-logic.js"></script>
+</body>
+</html>
+
+<!--<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="favicon-logo.png" type="image/png">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined">
     <link rel="stylesheet" href="CodeCSS/select-room.css">
@@ -37,4 +120,4 @@
 
 </body>
 
-</html>
+</html>-->
