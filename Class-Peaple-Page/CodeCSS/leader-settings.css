@@ -261,10 +261,50 @@ select:focus, input[type="time"]:focus {
     }
 
     main {
-        padding: 0;
+        padding: 5px;
     }
 
     #setupFormContainer, #currentStatusDisplay {
         padding: 20px;
+    }
+
+    #setupFormContainer h3, #currentStatusDisplay h3 {
+        font-size: 1.3rem;
+    }
+
+    select, input[type="time"] {
+        font-size: 0.9rem;
+    }
+
+    #setManualBtn {
+        width: 100%;
+        padding: 8px;
+        margin-top: 25px;
+        background-color: var(--success-color);
+        color: white;
+        border: none;
+        border-radius: 5px;
+        font-size: 0.95rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+
+    #setManualBtn:hover {
+        background-color: #2ecc71;
+    }
+
+    #clearManualBtn {
+        width: 100%;
+        padding: 8px;
+        margin-top: 15px;
+        background-color: var(--danger-color);
+        color: white;
+        border: none;
+        border-radius: 5px;
+        font-size: 0.95rem;
+        font-weight: 400;
+        cursor: pointer;
+        transition: background-color 0.3s;
     }
 }
