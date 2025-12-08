@@ -1,6 +1,6 @@
 .bigmain-box {
     background-color: rgba(255, 7, 7, 0.534);
-    border: 11px dashed white;
+    border: 9px dashed white;
     border-radius: 50px;
     padding: 6px;
     max-width: 1000px;
@@ -9,7 +9,7 @@
 }
 
 .smallmain-box {
-    background-color: rgba(147, 225, 246, 0.89);
+    background-color: rgba(255, 255, 255, 0.986);
     padding: 25px;
     border: 3.5px solid black;
     border-radius: 50px;
